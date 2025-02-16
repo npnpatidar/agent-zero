@@ -33,9 +33,12 @@ jobs:
       - name: Debug Check Dockerfile existence
         run: ls -l docker/run/
 
+      - name: Debug Check fs/ existence
+        run: ls -l docker/run/fs/
+
       - name: Install cosign
         if: github.event_name != 'pull_request'
-        uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
+        uses: sigstore/cosign-installer@v3
         with:
           cosign-release: "v2.2.4"
 
@@ -63,8 +66,8 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: docker/run/Dockerfile # Corrected Dockerfile path
+          context: docker/run  # Set correct context
+          file: docker/run/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
