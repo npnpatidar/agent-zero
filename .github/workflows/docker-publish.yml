@@ -2,12 +2,12 @@ name: Docker
 
 on:
   schedule:
-    - cron: '22 5 */3 * *'
+    - cron: "22 5 */3 * *"
   push:
-    branches: [ "main" ]
-    tags: [ 'v*.*.*' ]
+    branches: ["main"]
+    tags: ["v*.*.*"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   REGISTRY: ghcr.io
@@ -25,19 +25,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensure full repo history is available
+          fetch-depth: 0 # Ensure full repo history is available
 
-      - name: Debug: List all files
+      - name: Debug List all files
         run: ls -R
 
-      - name: Debug: Check Dockerfile existence
+      - name: Debug Check Dockerfile existence
         run: ls -l docker/run/
 
       - name: Install cosign
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@59acb6260d9c0ba8f4a2f9d9b48431a222b68e20 #v3.5.0
         with:
-          cosign-release: 'v2.2.4'
+          cosign-release: "v2.2.4"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -64,7 +64,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/run/Dockerfile  # Corrected Dockerfile path
+          file: docker/run/Dockerfile # Corrected Dockerfile path
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -78,4 +78,3 @@ jobs:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-
