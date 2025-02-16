@@ -27,13 +27,13 @@ jobs:
         with:
           fetch-depth: 0 # Ensure full repo history is available
 
-      - name: Debug: List all files
+      - name: Debug List all files
         run: ls -R
 
-      - name: Debug: Check Dockerfile existence
+      - name: Debug Check Dockerfile existence
         run: ls -l docker/run/ || echo "Dockerfile missing!"
 
-      - name: Debug: Check fs/ existence
+      - name: Debug Check fs/ existence
         run: ls -l docker/run/fs/ || echo "fs/ directory missing!"
 
       - name: Install cosign
