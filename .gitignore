@@ -12,6 +12,7 @@
 
 # Ignore all contents of the virtual environment directory
 .venv/
+.direnv/
 
 # Handle bundle directory
 bundle/*/
