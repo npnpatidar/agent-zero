@@ -12,7 +12,7 @@ while true; do
     echo "Starting A0..."
     python /a0/run_ui.py \
         --dockerized=true \
-        --port=80 \
+        --port=7665 \
         --host="0.0.0.0" \
         --code_exec_docker_enabled=false \
         --code_exec_ssh_enabled=true \
