@@ -26,7 +26,7 @@ RUN echo "cache buster $CACHE_DATE" && bash /ins/install_A02.sh $BRANCH
 RUN bash /ins/post_install.sh $BRANCH
 
 # Expose ports
-EXPOSE 22 80
+EXPOSE 22 7665
 
 # initialize runtime
 CMD ["/bin/bash", "-c", "/bin/bash /exe/initialize.sh $BRANCH"]
