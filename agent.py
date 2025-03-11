@@ -1,7 +1,11 @@
 import asyncio
 from collections import OrderedDict
 from dataclasses import dataclass, field
-import time, importlib, inspect, os, json
+import time
+import importlib
+import inspect
+import os
+import json
 import token
 from typing import Any, Awaitable, Coroutine, Optional, Dict, TypedDict
 import uuid
@@ -89,7 +93,7 @@ class AgentContext:
         else:
             current_agent = self.agent0
 
-        self.task =self.run_task(current_agent.monologue)
+        self.task = self.run_task(current_agent.monologue)
         return self.task
 
     def communicate(self, msg: "UserMessage", broadcast_level: int = 1):
@@ -163,12 +167,13 @@ class AgentConfig:
     browser_model: ModelConfig
     prompts_subdir: str = ""
     memory_subdir: str = ""
-    knowledge_subdirs: list[str] = field(default_factory=lambda: ["default", "custom"])
+    knowledge_subdirs: list[str] = field(
+        default_factory=lambda: ["default", "custom"])
     code_exec_docker_enabled: bool = False
     code_exec_docker_name: str = "A0-dev"
     code_exec_docker_image: str = "frdel/agent-zero-run:development"
     code_exec_docker_ports: dict[str, int] = field(
-        default_factory=lambda: {"22/tcp": 55022, "80/tcp": 55080}
+        default_factory=lambda: {"22/tcp": 55022, "7665/tcp": 55080}
     )
     code_exec_docker_volumes: dict[str, dict[str, str]] = field(
         default_factory=lambda: {
@@ -196,8 +201,10 @@ class LoopData:
         self.system = []
         self.user_message: history.Message | None = None
         self.history_output: list[history.OutputMessage] = []
-        self.extras_temporary: OrderedDict[str, history.MessageContent] = OrderedDict()
-        self.extras_persistent: OrderedDict[str, history.MessageContent] = OrderedDict()
+        self.extras_temporary: OrderedDict[str,
+                                           history.MessageContent] = OrderedDict()
+        self.extras_persistent: OrderedDict[str,
+                                            history.MessageContent] = OrderedDict()
         self.last_response = ""
 
         # override values with kwargs
@@ -252,7 +259,8 @@ class Agent:
                 # call monologue_start extensions
                 await self.call_extensions("monologue_start", loop_data=self.loop_data)
 
-                printer = PrintStyle(italic=True, font_color="#b3ffd9", padding=False)
+                printer = PrintStyle(
+                    italic=True, font_color="#b3ffd9", padding=False)
 
                 # let the agent run message loop until he stops it with a response tool
                 while True:
@@ -282,7 +290,8 @@ class Agent:
                                 self.log_from_stream(full, log)
 
                         # store as last context window content
-                        self.set_data(Agent.DATA_NAME_CTX_WINDOW, prompt.format())
+                        self.set_data(Agent.DATA_NAME_CTX_WINDOW,
+                                      prompt.format())
 
                         agent_response = await self.call_chat_model(
                             prompt, callback=stream_callback
@@ -301,7 +310,8 @@ class Agent:
                             PrintStyle(font_color="orange", padding=True).print(
                                 warning_msg
                             )
-                            self.context.log.log(type="warning", content=warning_msg)
+                            self.context.log.log(
+                                type="warning", content=warning_msg)
 
                         else:  # otherwise proceed with tool
                             # Append the assistant's response to the history
@@ -318,8 +328,10 @@ class Agent:
                         # Forward repairable errors to the LLM, maybe it can fix them
                         error_message = errors.format_error(e)
                         await self.hist_add_warning(error_message)
-                        PrintStyle(font_color="red", padding=True).print(error_message)
-                        self.context.log.log(type="error", content=error_message)
+                        PrintStyle(font_color="red", padding=True).print(
+                            error_message)
+                        self.context.log.log(
+                            type="error", content=error_message)
                     except Exception as e:
                         # Other exception kill the loop
                         self.handle_critical_exception(e)
@@ -338,7 +350,8 @@ class Agent:
             finally:
                 self.context.streaming_agent = None  # unset current streamer
                 # call monologue_end extensions
-                await self.call_extensions("monologue_end", loop_data=self.loop_data)  # type: ignore
+                # type: ignore
+                await self.call_extensions("monologue_end", loop_data=self.loop_data)
 
     async def prepare_prompt(self, loop_data: LoopData) -> ChatPromptTemplate:
         # set system prompt and message history
@@ -357,7 +370,8 @@ class Agent:
         loop_data.extras_temporary.clear()
 
         # combine history and extras
-        history_combined = history.group_outputs_abab(loop_data.history_output + extras)
+        history_combined = history.group_outputs_abab(
+            loop_data.history_output + extras)
 
         # convert history to LLM format
         history_langchain = history.output_langchain(history_combined)
@@ -393,7 +407,8 @@ class Agent:
                 content=error_message,
                 kvps={"text": error_text},
             )
-            raise HandledException(exception)  # Re-raise the exception to kill the loop
+            # Re-raise the exception to kill the loop
+            raise HandledException(exception)
 
     async def get_system_prompt(self, loop_data: LoopData) -> list[str]:
         system_prompt = []
@@ -408,7 +423,8 @@ class Agent:
         if (
             self.config.prompts_subdir
         ):  # if agent has custom folder, use it and use default as backup
-            prompt_dir = files.get_abs_path("prompts", self.config.prompts_subdir)
+            prompt_dir = files.get_abs_path(
+                "prompts", self.config.prompts_subdir)
             backup_dir.append(files.get_abs_path("prompts/default"))
         prompt = files.parse_file(
             files.get_abs_path(prompt_dir, file), _backup_dirs=backup_dir, **kwargs
@@ -421,7 +437,8 @@ class Agent:
         if (
             self.config.prompts_subdir
         ):  # if agent has custom folder, use it and use default as backup
-            prompt_dir = files.get_abs_path("prompts", self.config.prompts_subdir)
+            prompt_dir = files.get_abs_path(
+                "prompts", self.config.prompts_subdir)
             backup_dir.append(files.get_abs_path("prompts/default"))
         prompt = files.read_file(
             files.get_abs_path(prompt_dir, file), _backup_dirs=backup_dir, **kwargs
@@ -585,7 +602,8 @@ class Agent:
                     type="util",
                     update_progress="none",
                     heading=msg,
-                    model=f"{model_config.provider.value}\\{model_config.name}",
+                    model=f"{model_config.provider.value}\\{
+                        model_config.name}",
                 )
             wait_log.update(heading=msg, key=key, value=total, limit=limit)
             if not background:
@@ -631,13 +649,17 @@ class Agent:
             tool_args = tool_request.get("tool_args", {})
             tool = self.get_tool(tool_name, tool_args, msg)
 
-            await self.handle_intervention()  # wait if paused and handle intervention message if needed
+            # wait if paused and handle intervention message if needed
+            await self.handle_intervention()
             await tool.before_execution(**tool_args)
-            await self.handle_intervention()  # wait if paused and handle intervention message if needed
+            # wait if paused and handle intervention message if needed
+            await self.handle_intervention()
             response = await tool.execute(**tool_args)
-            await self.handle_intervention()  # wait if paused and handle intervention message if needed
+            # wait if paused and handle intervention message if needed
+            await self.handle_intervention()
             await tool.after_execution(response)
-            await self.handle_intervention()  # wait if paused and handle intervention message if needed
+            # wait if paused and handle intervention message if needed
+            await self.handle_intervention()
             if response.break_loop:
                 return response.message
         else:
